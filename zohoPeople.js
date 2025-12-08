@@ -19,7 +19,7 @@ async function getEmployees(start = 0, limit = 1, searchParams = {}) {
   const employeeIdKey = Object.keys(resultObject)[0];
   // Get the employee data array
   const employeeDataArray = resultObject[employeeIdKey];
-  console.log(employeeDataArray);
+  // ...existing code...
   return employeeDataArray; // return the array directly
 }
 

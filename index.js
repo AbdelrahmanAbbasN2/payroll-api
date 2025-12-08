@@ -299,10 +299,14 @@ app.get("/", (req, res) => {
 app.post("/api/payroll/process", async (req, res) => {
   try {
     const selectedDate = req.body.date || new Date().toISOString();
-    await processPayroll(selectedDate);
-    res.json({ success: true, message: "Payroll processed successfully" });
+    setImmediate(() => {
+      processPayroll(selectedDate).catch(err => {
+        console.error("Error processing payroll:", err);
+      });
+    });
+    res.json({ success: true, message: "Payroll processing started" });
   } catch (err) {
-    console.error("Error processing payroll:", err);
+    console.error("Error starting payroll process:", err);
     res.status(500).json({ error: err.message });
   }
 });

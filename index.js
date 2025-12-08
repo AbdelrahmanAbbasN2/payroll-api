@@ -285,8 +285,44 @@ async function processPayroll(selectedDateString) {
   console.log("Payroll processing finished for", employee_counter, "employees.");
 }
 
-// run
-const selectedDate = process.argv[2] || new Date().toISOString();
-processPayroll(selectedDate).catch(err => {
-  console.error("Fatal error:", err);
+// Express API setup
+const express = require("express");
+const app = express();
+app.use(express.json());
+
+// API endpoint to process payroll
+app.get("/", (req, res) => {
+    res.send("Payroll API is running. Use POST /api/payroll/process to process payroll.");
 });
+
+
+app.post("/api/payroll/process", async (req, res) => {
+  try {
+    const selectedDate = req.body.date || new Date().toISOString();
+    await processPayroll(selectedDate);
+    res.json({ success: true, message: "Payroll processed successfully" });
+  } catch (err) {
+    console.error("Error processing payroll:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Health check endpoint
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok" });
+});
+
+// Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`POST /api/payroll/process - Process payroll for a date`);
+});
+
+// Also allow CLI execution
+if (process.argv[2] === "--cli") {
+  const selectedDate = process.argv[3] || new Date().toISOString();
+  processPayroll(selectedDate).catch(err => {
+    console.error("Fatal error:", err);
+  });
+}

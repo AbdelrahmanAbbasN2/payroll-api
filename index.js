@@ -127,6 +127,15 @@ async function processPayroll(selectedDateString) {
       }
       const attendance_deduction = daily_rate * unpaid_days;
 
+      // === Parallel Creator API Queries ===
+      // Execute all 4 Creator queries in parallel instead of sequential
+      const [bonusesResp, dedResp, loansResp, extraResp] = await Promise.all([
+        queryForm("All_Bonuses", `(Employee_Id == "${employee_id}")`, 1, 200).catch(() => null),
+        queryForm("All_Deductions", `(Employee_Id == "${employee_id}")`, 1, 200).catch(() => null),
+        queryForm("All_Loans", `(Employee_Id == "${employee_id}")`, 1, 200).catch(() => null),
+        queryForm("All_Extra_Hours", `(Employee_Id == "${employee_id}")`, 1, 200).catch(() => null)
+      ]);
+
       // === Bonuses (Creator) ===
       let total_bonus = 0;
       let recognition = 0;
@@ -135,9 +144,6 @@ async function processPayroll(selectedDateString) {
       let training_amount = 0;
       let other_amount = 0;
 
-      // Query Creator Bonus form — adjust report/form link name to your report link
-      const bonusCriteria = `(Employee_Id == "${employee_id}")`;
-      let bonusesResp = await queryForm("All_Bonuses", bonusCriteria, 1, 200).catch(() => null);
       if (bonusesResp && bonusesResp.data) {
         const bonuses = bonusesResp.data;
         for (const bonus of bonuses) {
@@ -158,8 +164,6 @@ async function processPayroll(selectedDateString) {
 
       // === Deductions (Creator) ===
       let total_deductions = 0, penalty = 0, premium_card = 0, halan_advance = 0, er_deductions = 0, other_deductions = 0;
-      const dedCriteria = `(Employee_Id == "${employee_id}")`;
-      let dedResp = await queryForm("All_Deductions", dedCriteria, 1, 200).catch(()=> null);
       if (dedResp && dedResp.data) {
         for (const d of dedResp.data) {
           const dateField = new Date(d.Date_field);
@@ -178,7 +182,6 @@ async function processPayroll(selectedDateString) {
 
       // === Loans ===
       let total_loans = 0;
-      const loansResp = await queryForm("All_Loans", `(Employee_Id == "${employee_id}")`, 1, 200).catch(()=>null);
       if (loansResp && loansResp.data) {
         for (const loan of loansResp.data) {
           total_loans += toLongSafe(loan.Installment_Amount);
@@ -188,7 +191,6 @@ async function processPayroll(selectedDateString) {
 
       // === Extra hours ===
       let total_extra_hours_payment = 0;
-      const extraResp = await queryForm("All_Extra_Hours", `(Employee_Id == "${employee_id}")`, 1, 200).catch(()=>null);
       if (extraResp && extraResp.data) {
         for (const eh of extraResp.data) {
           const dateField = new Date(eh.Date_field);

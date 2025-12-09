@@ -25,12 +25,25 @@ async function getEmployees(start = 0, limit = 1, searchParams = {}) {
 
 async function getAttendance(empId, startDate, endDate) {
   const token = await getAccessToken();
+  // const token = "1000.27de627491f11be00eeebdc7fe67e981.26adcb41a34b54c4715b4ddbff0f8b91";
   const url = `https://people.zoho.com/people/api/attendance/getUserReport?empId=${encodeURIComponent(empId)}&sdate=${encodeURIComponent(startDate)}&edate=${encodeURIComponent(endDate)}`;
+  // const url = `https://people.zoho.com/people/api/attendance/getUserReport?empId=sdate=${encodeURIComponent(startDate)}&edate=${encodeURIComponent(endDate)}&startIndex=${empId}`;
   const resp = await axios.get(url, {
     headers: { Authorization: `Zoho-oauthtoken ${token}` }
   });
   return resp.data;
 }
-
-getEmployees();
+async function get_data()
+{
+  let attendance_response = [];
+  for (let i = 0; i < 900; i += 100)
+    {
+      attendance_response.push(await getAttendance(i, "1-Nov-2025", "30-Nov-2025"))
+    }
+    console.log(attendance_response);
+    console.log(attendance_response.length);
+    return attendance_response;
+}
+get_data();
+// getEmployees();
 module.exports = { getEmployees, getAttendance };

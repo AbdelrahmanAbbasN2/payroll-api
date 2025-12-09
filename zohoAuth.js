@@ -30,7 +30,9 @@ async function getAccessToken() {
   // Zoho returns expires_in (seconds)
   tokenExpiry = (Date.now() / 1000) + (resp.data.expires_in || 3600);
   // ...existing code...
+  console.log(cachedToken);
   return cachedToken;
 }
-
+getAccessToken();
+// 1000.c1b56e59583cb7df9ad209142ea5ca41.fb5784631f500915f0a959fe72153b3d
 module.exports = { getAccessToken };
